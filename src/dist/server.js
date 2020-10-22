@@ -1,23 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -54,26 +35,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 exports.__esModule = true;
 /* eslint-disable import/first */
 // @ts-nocheck
-var dotenv_1 = __importDefault(require("dotenv"));
-var path = __importStar(require("path"));
+var dotenv_1 = require("dotenv");
+var path = require("path");
 if (process.env.PROD) {
     dotenv_1["default"].config({ path: path.resolve(__dirname, '../', 'secrets', '.env.production') });
 }
 else {
     dotenv_1["default"].config({ path: path.resolve(__dirname, '../', 'secrets', '.env.development') });
 }
-var express_1 = __importDefault(require("express"));
+var express_1 = require("express");
 var express_validator_1 = require("express-validator");
-var soundcloud_downloader_1 = __importDefault(require("soundcloud-downloader"));
-var body_parser_1 = __importDefault(require("body-parser"));
-var axios_1 = __importDefault(require("axios"));
-var bluebird_1 = __importDefault(require("bluebird"));
+var soundcloud_downloader_1 = require("soundcloud-downloader");
+var body_parser_1 = require("body-parser");
+var axios_1 = require("axios");
+var bluebird_1 = require("bluebird");
 var app = express_1["default"]();
 var axiosInstance = axios_1["default"].create({
     timeout: parseInt(process.env.AXIOS_TIMEOUT)
@@ -98,7 +76,7 @@ var appendURL = function (url) {
     });
     return u.href;
 };
-var getMediaURL = function (url, clientID) { return __awaiter(void 0, void 0, void 0, function () {
+var getMediaURL = function (url, clientID) { return __awaiter(void 0, void 0, Promise, function () {
     var res;
     return __generator(this, function (_a) {
         switch (_a.label) {
