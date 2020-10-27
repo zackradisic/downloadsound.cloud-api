@@ -3,7 +3,7 @@
 import dotenv from 'dotenv'
 import * as path from 'path'
 if (process.env.PROD) {
-  dotenv.config({ path: path.resolve(__dirname, '../', 'secrets', '.env.production') })
+  dotenv.config({ path: path.resolve(__dirname, 'secrets', '.env.production') })
 } else {
   dotenv.config({ path: path.resolve(__dirname, '../', 'secrets', '.env.development') })
 }

@@ -8,4 +8,6 @@ RUN npm install --only=production
 
 COPY dist/ ./
 
+COPY secrets ./secrets
+
 CMD ["node", "server.js"]
