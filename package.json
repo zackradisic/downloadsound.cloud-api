@@ -1,7 +1,7 @@
 {
   "name": "downloadsound.cloud-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "API for downloadsound.cloud",
   "main": "index.js",
   "scripts": {
     "build": "npx tsc src/*.ts --outDir dist --esModuleInterop"
