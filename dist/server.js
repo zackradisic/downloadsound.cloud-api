@@ -157,7 +157,8 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
                 return [4 /*yield*/, soundcloud_downloader_1["default"].getInfo(_body.url)];
             case 2:
                 trackInfo = _a.sent();
-                media = trackInfo.media.transcodings[0];
+                media = soundcloud_downloader_1["default"].filterMedia(trackInfo.media, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE });
+                media = media.length === 0 ? trackInfo.media.transcodings[0] : media;
                 return [4 /*yield*/, getMediaURL(media.url, soundcloud_downloader_1["default"]._clientID)];
             case 3:
                 mediaURL = _a.sent();
@@ -202,7 +203,7 @@ app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().t
                 }
                 urls = setInfo.tracks.map(function (track) { return ({
                     title: track.title,
-                    url: track.media.transcodings[0].url,
+                    url: soundcloud_downloader_1["default"].filterMedia(track.media, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0].url : soundcloud_downloader_1["default"].filterMedia(track.media, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE }),
                     hls: !track.media.transcodings[0].url.includes('progressive')
                 }); });
                 return [4 /*yield*/, getMediaURLMany(soundcloud_downloader_1["default"]._clientID, urls)];
