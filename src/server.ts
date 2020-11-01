@@ -77,8 +77,8 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
 
   try {
     const trackInfo = await scdl.getInfo(_body.url)
-    let media = scdl.filterMedia(trackInfo.media, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })
-    media = media.length === 0 ? trackInfo.media.transcodings[0] : media
+    let media = scdl.filterMedia(trackInfo.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })
+    media = media.length === 0 ? trackInfo.media.transcodings[0] : media[0]
     const mediaURL = await getMediaURL(media.url, scdl._clientID)
     res.status(200).json({ url: mediaURL, title: trackInfo.title, author: trackInfo.user, imageURL: getImgURL(trackInfo.artwork_url) || getImgURL(trackInfo.user.avatar_url) })
   } catch (err) {
@@ -86,6 +86,7 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
       res.status(408)
       return
     }
+    console.log(err)
     res.status(500)
     res.send({ err: 'Internal server error occurred' })
   }
@@ -113,7 +114,7 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, 
     const urls = setInfo.tracks.map(track => (
       {
         title: track.title,
-        url: scdl.filterMedia(track.media, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0].url : scdl.filterMedia(track.media, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }),
+        url: scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0].url : scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })[0].url,
         hls: !track.media.transcodings[0].url.includes('progressive')
       }
     ))
