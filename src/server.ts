@@ -75,6 +75,7 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
     return
   }
 
+  console.log(_body.url)
   try {
     const trackInfo = await scdl.getInfo(_body.url)
     let media = scdl.filterMedia(trackInfo.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })
@@ -94,7 +95,7 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
 
 app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, res) => {
   const _body = req.body
-
+  console.log(_body.url)
   if (!(_body.url.includes('playlist') || _body.url.includes('sets'))) {
     res.status(422).json({ err: 'URL is not a playlist' })
     return

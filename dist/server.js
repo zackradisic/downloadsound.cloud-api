@@ -151,6 +151,7 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
                     res.status(422).send({ err: 'URL is not a valid SoundCloud URL' });
                     return [2 /*return*/];
                 }
+                console.log(_body.url);
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 4, , 5]);
@@ -184,6 +185,7 @@ app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().t
         switch (_a.label) {
             case 0:
                 _body = req.body;
+                console.log(_body.url);
                 if (!(_body.url.includes('playlist') || _body.url.includes('sets'))) {
                     res.status(422).json({ err: 'URL is not a playlist' });
                     return [2 /*return*/];
