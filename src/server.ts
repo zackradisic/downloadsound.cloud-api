@@ -112,13 +112,14 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, 
       res.status(403).send({ err: 'That playlist has too many tracks', count: setInfo.tracks.length })
       return
     }
-    const urls = setInfo.tracks.map(track => (
-      {
+    const urls = setInfo.tracks.map(track => {
+      const url = scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0].url : scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })[0].url
+      return {
         title: track.title,
-        url: scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0].url : scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })[0].url,
-        hls: !track.media.transcodings[0].url.includes('progressive')
+        url: url,
+        hls: !url.includes('progressive')
       }
-    ))
+    })
     const mediaURLS = await getMediaURLMany(scdl._clientID, urls)
     res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) })
   } catch (err) {
