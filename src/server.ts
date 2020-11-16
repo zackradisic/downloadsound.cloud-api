@@ -58,7 +58,7 @@ const getMediaURL = async (url: string, clientID: string): Promise<string> => {
 
 const getMediaURLMany = async (clientID: string, tracks: PlaylistTrack[], concurrency = 15) => {
   return _Promise.map(tracks, async (track: PlaylistTrack) => {
-    const url = await getMediaURL(track.url, clientID)
+    const url = await getMediaURL(track.url, scdl._clientID)
     return { title: track.title, url, hls: track.hls }
   }, { concurrency })
 }
@@ -71,7 +71,7 @@ const getImgURL = (url: string) => {
 const clientIDs = [
   'egDzE3xmafwb5ki9VMXAstPEmrdBItZq',
   'RoD1TpSH4kloXDRWdokiXSob4MgmXZrY',
-  ''
+  undefined
 ]
 
 const randomClientID = () => clientIDs[Math.floor(Math.random() * ((clientIDs.length - 1) - 0 + 1))]
@@ -88,7 +88,7 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
     const trackInfo = await scdl.getInfo(_body.url, randomClientID())
     let media = scdl.filterMedia(trackInfo.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })
     media = media.length === 0 ? trackInfo.media.transcodings[0] : media[0]
-    const mediaURL = await getMediaURL(media.url, randomClientID())
+    const mediaURL = await getMediaURL(media.url, scdl._clientID)
     res.status(200).json({ url: mediaURL, title: trackInfo.title, author: trackInfo.user, imageURL: getImgURL(trackInfo.artwork_url) || getImgURL(trackInfo.user.avatar_url) })
   } catch (err) {
     if (err.code === 'ECONNABORTED') {
@@ -128,7 +128,7 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, 
         hls: !url.includes('progressive')
       }
     })
-    const mediaURLS = await getMediaURLMany(randomClientID(), urls)
+    const mediaURLS = await getMediaURLMany(scdl._clientID, urls)
     res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) })
   } catch (err) {
     if (err.code === 'ECONNABORTED') {

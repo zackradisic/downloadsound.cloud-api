@@ -126,7 +126,7 @@ var getMediaURLMany = function (clientID, tracks, concurrency) {
                     var url;
                     return __generator(this, function (_a) {
                         switch (_a.label) {
-                            case 0: return [4 /*yield*/, getMediaURL(track.url, clientID)];
+                            case 0: return [4 /*yield*/, getMediaURL(track.url, soundcloud_downloader_1["default"]._clientID)];
                             case 1:
                                 url = _a.sent();
                                 return [2 /*return*/, { title: track.title, url: url, hls: track.hls }];
@@ -144,7 +144,7 @@ var getImgURL = function (url) {
 var clientIDs = [
     'egDzE3xmafwb5ki9VMXAstPEmrdBItZq',
     'RoD1TpSH4kloXDRWdokiXSob4MgmXZrY',
-    ''
+    undefined
 ];
 var randomClientID = function () { return clientIDs[Math.floor(Math.random() * ((clientIDs.length - 1) - 0 + 1))]; };
 app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim()], function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
@@ -166,7 +166,7 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
                 trackInfo = _a.sent();
                 media = soundcloud_downloader_1["default"].filterMedia(trackInfo.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE });
                 media = media.length === 0 ? trackInfo.media.transcodings[0] : media[0];
-                return [4 /*yield*/, getMediaURL(media.url, randomClientID())];
+                return [4 /*yield*/, getMediaURL(media.url, soundcloud_downloader_1["default"]._clientID)];
             case 3:
                 mediaURL = _a.sent();
                 res.status(200).json({ url: mediaURL, title: trackInfo.title, author: trackInfo.user, imageURL: getImgURL(trackInfo.artwork_url) || getImgURL(trackInfo.user.avatar_url) });
@@ -218,7 +218,7 @@ app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().t
                         hls: !url.includes('progressive')
                     };
                 });
-                return [4 /*yield*/, getMediaURLMany(randomClientID(), urls)];
+                return [4 /*yield*/, getMediaURLMany(soundcloud_downloader_1["default"]._clientID, urls)];
             case 3:
                 mediaURLS = _a.sent();
                 res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) });
