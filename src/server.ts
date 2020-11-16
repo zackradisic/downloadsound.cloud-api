@@ -58,7 +58,7 @@ const getMediaURL = async (url: string, clientID: string): Promise<string> => {
 
 const getMediaURLMany = async (clientID: string, tracks: PlaylistTrack[], concurrency = 15) => {
   return _Promise.map(tracks, async (track: PlaylistTrack) => {
-    const url = await getMediaURL(track.url, scdl._clientID)
+    const url = await getMediaURL(track.url, clientID)
     return { title: track.title, url, hls: track.hls }
   }, { concurrency })
 }
