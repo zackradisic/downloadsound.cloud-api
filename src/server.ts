@@ -68,6 +68,14 @@ const getImgURL = (url: string) => {
   return url.slice(0, url.lastIndexOf('-')).concat('-t500x500.jpg')
 }
 
+const clientIDs = [
+  'egDzE3xmafwb5ki9VMXAstPEmrdBItZq',
+  'RoD1TpSH4kloXDRWdokiXSob4MgmXZrY',
+  ''
+]
+
+const randomClientID = () => clientIDs[Math.floor(Math.random() * ((clientIDs.length - 1) - 0 + 1))]
+
 app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res) => {
   const _body = req.body
   if (!scdl.isValidUrl(_body.url)) {
@@ -77,10 +85,10 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
 
   console.log(_body.url)
   try {
-    const trackInfo = await scdl.getInfo(_body.url)
+    const trackInfo = await scdl.getInfo(_body.url, randomClientID())
     let media = scdl.filterMedia(trackInfo.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })
     media = media.length === 0 ? trackInfo.media.transcodings[0] : media[0]
-    const mediaURL = await getMediaURL(media.url, scdl._clientID)
+    const mediaURL = await getMediaURL(media.url, randomClientID())
     res.status(200).json({ url: mediaURL, title: trackInfo.title, author: trackInfo.user, imageURL: getImgURL(trackInfo.artwork_url) || getImgURL(trackInfo.user.avatar_url) })
   } catch (err) {
     if (err.code === 'ECONNABORTED') {
@@ -107,7 +115,7 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, 
   }
 
   try {
-    const setInfo = await scdl.getSetInfo(_body.url)
+    const setInfo = await scdl.getSetInfo(_body.url, randomClientID())
     if (setInfo.tracks.length > 100) {
       res.status(403).send({ err: 'That playlist has too many tracks', count: setInfo.tracks.length })
       return
@@ -120,7 +128,7 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, 
         hls: !url.includes('progressive')
       }
     })
-    const mediaURLS = await getMediaURLMany(scdl._clientID, urls)
+    const mediaURLS = await getMediaURLMany(randomClientID(), urls)
     res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) })
   } catch (err) {
     if (err.code === 'ECONNABORTED') {
