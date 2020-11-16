@@ -74,7 +74,10 @@ const clientIDs = [
   undefined
 ]
 
-const randomClientID = () => clientIDs[Math.floor(Math.random() * ((clientIDs.length - 1) - 0 + 1))]
+const randomClientID = () => {
+  scdl._clientID = clientIDs[Math.floor(Math.random() * ((clientIDs.length - 1) - 0 + 1))]
+  return scdl._clientID
+}
 
 app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res) => {
   const _body = req.body

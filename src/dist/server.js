@@ -124,7 +124,10 @@ var clientIDs = [
     'RoD1TpSH4kloXDRWdokiXSob4MgmXZrY',
     undefined
 ];
-var randomClientID = function () { return clientIDs[Math.floor(Math.random() * ((clientIDs.length - 1) - 0 + 1))]; };
+var randomClientID = function () {
+    soundcloud_downloader_1["default"]._clientID = clientIDs[Math.floor(Math.random() * ((clientIDs.length - 1) - 0 + 1))];
+    return soundcloud_downloader_1["default"]._clientID;
+};
 app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim()], function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var _body, trackInfo, media, mediaURL, err_1;
     return __generator(this, function (_a) {
