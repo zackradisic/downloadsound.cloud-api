@@ -58,7 +58,13 @@ var axiosInstance = axios_1["default"].create({
 });
 soundcloud_downloader_1["default"].setAxiosInstance(axiosInstance);
 app.use(body_parser_1["default"].json());
-app.use(function (req, res, next) {
+app.options('/track', function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    next();
+});
+app.options('/playlist', function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
@@ -122,6 +128,7 @@ var getImgURL = function (url) {
 var clientIDs = [
     'egDzE3xmafwb5ki9VMXAstPEmrdBItZq',
     'RoD1TpSH4kloXDRWdokiXSob4MgmXZrY',
+    '1HlI5XuA1nP37e3XeslFPWW8PpWgowNq',
     undefined
 ];
 var randomClientID = function () {

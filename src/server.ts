@@ -22,7 +22,15 @@ const axiosInstance = axios.create({
 
 scdl.setAxiosInstance(axiosInstance)
 app.use(bodyParser.json())
-app.use((req, res, next) => {
+
+app.options('/track', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+  next()
+})
+
+app.options('/playlist', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL)
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
@@ -71,6 +79,7 @@ const getImgURL = (url: string) => {
 const clientIDs = [
   'egDzE3xmafwb5ki9VMXAstPEmrdBItZq',
   'RoD1TpSH4kloXDRWdokiXSob4MgmXZrY',
+  '1HlI5XuA1nP37e3XeslFPWW8PpWgowNq',
   undefined
 ]
 
