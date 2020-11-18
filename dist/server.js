@@ -86,6 +86,18 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     next();
 });
+app.options('/track', function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    next();
+});
+app.options('/playlist', function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    next();
+});
 var appendURL = function (url) {
     var params = [];
     for (var _i = 1; _i < arguments.length; _i++) {
@@ -144,6 +156,7 @@ var getImgURL = function (url) {
 var clientIDs = [
     'egDzE3xmafwb5ki9VMXAstPEmrdBItZq',
     'RoD1TpSH4kloXDRWdokiXSob4MgmXZrY',
+    '1HlI5XuA1nP37e3XeslFPWW8PpWgowNq',
     undefined
 ];
 var randomClientID = function () {
@@ -169,6 +182,10 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
                 trackInfo = _a.sent();
                 media = soundcloud_downloader_1["default"].filterMedia(trackInfo.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE });
                 media = media.length === 0 ? trackInfo.media.transcodings[0] : media[0];
+                if (!media) {
+                    res.status(400).send({ err: "The track, \"" + trackInfo.title + "\", cannot be downloaded due to copyright reasons." });
+                    return [2 /*return*/];
+                }
                 return [4 /*yield*/, getMediaURL(media.url, soundcloud_downloader_1["default"]._clientID)];
             case 3:
                 mediaURL = _a.sent();
@@ -189,7 +206,7 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
     });
 }); });
 app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().trim()], function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _body, setInfo, urls, mediaURLS, err_2;
+    var _body, setInfo, err_3, urls, mediaURLS, err_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -214,13 +231,24 @@ app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().t
                     return [2 /*return*/];
                 }
                 urls = setInfo.tracks.map(function (track) {
-                    var url = soundcloud_downloader_1["default"].filterMedia(track.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0].url : soundcloud_downloader_1["default"].filterMedia(track.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE })[0].url;
+                    var transcoding = soundcloud_downloader_1["default"].filterMedia(track.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0] : soundcloud_downloader_1["default"].filterMedia(track.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE })[0];
+                    if (!transcoding) {
+                        err_3 = new Error('The track, "' + track.title + '", cannot be downloaded due to copyright reasons.');
+                        return;
+                    }
+                    var url = transcoding.url;
                     return {
                         title: track.title,
                         url: url,
                         hls: !url.includes('progressive')
                     };
                 });
+                if (err_3) {
+                    res.status(400).send({ err: err_3.message });
+                    console.log(err_3);
+                    res.end();
+                    return [2 /*return*/];
+                }
                 return [4 /*yield*/, getMediaURLMany(soundcloud_downloader_1["default"]._clientID, urls)];
             case 3:
                 mediaURLS = _a.sent();

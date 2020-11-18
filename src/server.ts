@@ -7,7 +7,7 @@ if (process.env.PROD) {
 } else {
   dotenv.config({ path: path.resolve(__dirname, '../', 'secrets', '.env.development') })
 }
-import express from 'express'
+import express, { Express } from 'express'
 import { body } from 'express-validator'
 import scdl from 'soundcloud-downloader'
 import bodyParser from 'body-parser'
@@ -22,6 +22,13 @@ const axiosInstance = axios.create({
 
 scdl.setAxiosInstance(axiosInstance)
 app.use(bodyParser.json())
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+  next()
+})
 
 app.options('/track', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL)
@@ -100,6 +107,10 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
     const trackInfo = await scdl.getInfo(_body.url, randomClientID())
     let media = scdl.filterMedia(trackInfo.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })
     media = media.length === 0 ? trackInfo.media.transcodings[0] : media[0]
+    if (!media) {
+      res.status(400).send({ err: `The track, "${trackInfo.title}", cannot be downloaded due to copyright reasons.` })
+      return
+    }
     const mediaURL = await getMediaURL(media.url, scdl._clientID)
     res.status(200).json({ url: mediaURL, title: trackInfo.title, author: trackInfo.user, imageURL: getImgURL(trackInfo.artwork_url) || getImgURL(trackInfo.user.avatar_url) })
   } catch (err) {
@@ -113,7 +124,7 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
   }
 })
 
-app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, res) => {
+app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req: Express.Request, res: Express.Request) => {
   const _body = req.body
   console.log(_body.url)
   if (!(_body.url.includes('playlist') || _body.url.includes('sets'))) {
@@ -132,14 +143,26 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req, 
       res.status(403).send({ err: 'That playlist has too many tracks', count: setInfo.tracks.length })
       return
     }
+    let err: Error
     const urls = setInfo.tracks.map(track => {
-      const url = scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0].url : scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })[0].url
+      const transcoding = scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0] : scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })[0]
+      if (!transcoding) {
+        err = new Error('The track, "' + track.title + '", cannot be downloaded due to copyright reasons.')
+        return
+      }
+      const url = transcoding.url
       return {
         title: track.title,
         url: url,
         hls: !url.includes('progressive')
       }
     })
+    if (err) {
+      res.status(400).send({ err: err.message })
+      console.log(err)
+      res.end()
+      return
+    }
     const mediaURLS = await getMediaURLMany(scdl._clientID, urls)
     res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) })
   } catch (err) {
