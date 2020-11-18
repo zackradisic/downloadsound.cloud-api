@@ -119,6 +119,17 @@ app.post('/track', [body('url').not().isEmpty().isURL().trim()], async (req, res
       return
     }
     console.log(err)
+    if (err.response) {
+      const errCode = err.response.status
+      let msg = ''
+      switch (err.response.status) {
+        case 404:
+          msg = 'Could not find that track/playlist'
+          break
+      }
+      res.status(errCode).send({ err: msg })
+      return
+    }
     res.status(500)
     res.send({ err: 'Internal server error occurred' })
   }
@@ -171,6 +182,17 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req: 
       return
     }
     console.log(err)
+    if (err.response) {
+      const errCode = err.response.status
+      let msg = ''
+      switch (err.response.status) {
+        case 404:
+          msg = 'Could not find that track/playlist'
+          break
+      }
+      res.status(errCode).send({ err: msg })
+      return
+    }
     res.status(500)
     res.send({ err: 'Internal server error occurred' })
   }

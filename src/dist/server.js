@@ -142,7 +142,7 @@ var randomClientID = function () {
     return soundcloud_downloader_1["default"]._clientID;
 };
 app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim()], function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _body, trackInfo, media, mediaURL, err_1;
+    var _body, trackInfo, media, mediaURL, err_1, errCode, msg;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -176,6 +176,17 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
                     return [2 /*return*/];
                 }
                 console.log(err_1);
+                if (err_1.response) {
+                    errCode = err_1.response.status;
+                    msg = '';
+                    switch (err_1.response.status) {
+                        case 404:
+                            msg = 'Could not find that track/playlist';
+                            break;
+                    }
+                    res.status(errCode).send({ err: msg });
+                    return [2 /*return*/];
+                }
                 res.status(500);
                 res.send({ err: 'Internal server error occurred' });
                 return [3 /*break*/, 5];
@@ -184,7 +195,7 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
     });
 }); });
 app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().trim()], function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _body, setInfo, err_3, urls, mediaURLS, err_2;
+    var _body, setInfo, err_3, urls, mediaURLS, err_2, errCode, msg;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -239,6 +250,17 @@ app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().t
                     return [2 /*return*/];
                 }
                 console.log(err_2);
+                if (err_2.response) {
+                    errCode = err_2.response.status;
+                    msg = '';
+                    switch (err_2.response.status) {
+                        case 404:
+                            msg = 'Could not find that track/playlist';
+                            break;
+                    }
+                    res.status(errCode).send({ err: msg });
+                    return [2 /*return*/];
+                }
                 res.status(500);
                 res.send({ err: 'Internal server error occurred' });
                 return [3 /*break*/, 5];
