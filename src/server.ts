@@ -154,28 +154,27 @@ app.post('/playlist', [body('url').not().isEmpty().isURL().trim()], async (req: 
       res.status(403).send({ err: 'That playlist has too many tracks', count: setInfo.tracks.length })
       return
     }
-    let err: Error
+    const copyrightedTracks = []
     const urls = setInfo.tracks.map(track => {
       const transcoding = scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0] : scdl.filterMedia(track.media.transcodings, { protocol: scdl.STREAMING_PROTOCOLS.PROGRESSIVE })[0]
       if (!transcoding) {
-        err = new Error('The track, "' + track.title + '", cannot be downloaded due to copyright reasons.')
-        return
+        copyrightedTracks.push(track.title)
+        return undefined
       }
       const url = transcoding.url
+      if (url.includes('/preview/')) {
+        copyrightedTracks.push(track.title)
+        return undefined
+      }
       return {
         title: track.title,
         url: url,
         hls: !url.includes('progressive')
       }
-    })
-    if (err) {
-      res.status(400).send({ err: err.message })
-      console.log(err)
-      res.end()
-      return
-    }
+    }).filter(track => !!track)
+
     const mediaURLS = await getMediaURLMany(scdl._clientID, urls)
-    res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) })
+    res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, copyrightedTracks, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) })
   } catch (err) {
     if (err.code === 'ECONNABORTED') {
       res.status(408)

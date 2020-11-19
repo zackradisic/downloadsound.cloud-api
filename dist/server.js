@@ -217,7 +217,7 @@ app.post('/track', [express_validator_1.body('url').not().isEmpty().isURL().trim
     });
 }); });
 app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().trim()], function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var _body, setInfo, err_3, urls, mediaURLS, err_2, errCode, msg;
+    var _body, setInfo, copyrightedTracks_1, urls, mediaURLS, err_2, errCode, msg;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -241,29 +241,28 @@ app.post('/playlist', [express_validator_1.body('url').not().isEmpty().isURL().t
                     res.status(403).send({ err: 'That playlist has too many tracks', count: setInfo.tracks.length });
                     return [2 /*return*/];
                 }
+                copyrightedTracks_1 = [];
                 urls = setInfo.tracks.map(function (track) {
                     var transcoding = soundcloud_downloader_1["default"].filterMedia(track.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE }).length === 0 ? track.media.transcodings[0] : soundcloud_downloader_1["default"].filterMedia(track.media.transcodings, { protocol: soundcloud_downloader_1["default"].STREAMING_PROTOCOLS.PROGRESSIVE })[0];
                     if (!transcoding) {
-                        err_3 = new Error('The track, "' + track.title + '", cannot be downloaded due to copyright reasons.');
-                        return;
+                        copyrightedTracks_1.push(track.title);
+                        return undefined;
                     }
                     var url = transcoding.url;
+                    if (url.includes('/preview/')) {
+                        copyrightedTracks_1.push(track.title);
+                        return undefined;
+                    }
                     return {
                         title: track.title,
                         url: url,
                         hls: !url.includes('progressive')
                     };
-                });
-                if (err_3) {
-                    res.status(400).send({ err: err_3.message });
-                    console.log(err_3);
-                    res.end();
-                    return [2 /*return*/];
-                }
+                }).filter(function (track) { return !!track; });
                 return [4 /*yield*/, getMediaURLMany(soundcloud_downloader_1["default"]._clientID, urls)];
             case 3:
                 mediaURLS = _a.sent();
-                res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) });
+                res.status(200).json({ url: _body.url, title: setInfo.title, tracks: mediaURLS, copyrightedTracks: copyrightedTracks_1, author: setInfo.user, imageURL: getImgURL(setInfo.artwork_url) || getImgURL(setInfo.user.avatar_url) });
                 return [3 /*break*/, 5];
             case 4:
                 err_2 = _a.sent();
